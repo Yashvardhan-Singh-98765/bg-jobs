@@ -1,0 +1,15 @@
+{
+  "name": "bg-jobs",
+  "version": "1.0.0",
+  "description": "A dummy background job system: client library + worker server, with concurrency limits, retries, and scheduled jobs. Backed by SQLite (node:sqlite), zero external dependencies.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "demo": "node examples/demo.js",
+    "demo:scheduled": "node examples/scheduled-demo.js",
+    "test": "node --test test/run.js"
+  },
+  "license": "MIT"
+}
