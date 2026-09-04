@@ -71,6 +71,18 @@ class JobStore {
       RETURNING *
     `);
 
+    this._claimAnyQueueStmt = this.db.prepare(`
+      UPDATE jobs
+      SET status = 'running', attempts = attempts + 1, started_at = @now
+      WHERE id = (
+        SELECT id FROM jobs
+        WHERE status = 'pending' AND scheduled_at <= @now
+        ORDER BY priority DESC, scheduled_at ASC, id ASC
+        LIMIT 1
+      )
+      RETURNING *
+    `);
+
     this._completeStmt = this.db.prepare(`
       UPDATE jobs SET status = 'completed', completed_at = @now, result = @result
       WHERE id = @id
@@ -105,10 +117,10 @@ class JobStore {
 
   /** Claim the next runnable job from one of `queues`, or null if none is ready. */
   claimNext(queues) {
-    const row = this._claimStmt.get({
-      now: new Date().toISOString(),
-      queues: JSON.stringify(queues),
-    });
+    const statement = queues == null ? this._claimAnyQueueStmt : this._claimStmt;
+    const params = { now: new Date().toISOString() };
+    if (queues != null) params.queues = JSON.stringify(queues);
+    const row = statement.get(params);
     if (!row) return null;
     return { ...row, payload: JSON.parse(row.payload) };
   }

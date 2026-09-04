@@ -20,6 +20,9 @@ for (const suffix of ['', '-wal', '-shm']) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const pick = (items) => items[randomInt(0, items.length - 1)];
+const makeEmail = () => `customer-${Math.random().toString(36).slice(2, 8)}@${pick(['example.com', 'demo.net', 'mail.test'])}`;
 
 async function main() {
   const client = new Client({ dbPath: DB_PATH });
@@ -27,8 +30,8 @@ async function main() {
   // Real-world usage: schedule something two days out.
   const farFutureId = client.push(
     'send_followup_email',
-    { to: 'customer@example.com' },
-    { delay: '2d' },
+    { to: makeEmail(), campaign: `campaign-${randomInt(1000, 9999)}` },
+    { delay: '2d', priority: randomInt(0, 8) },
   );
   const farFutureJob = client.getJob(farFutureId);
   console.log(`Pushed job #${farFutureId}, scheduled_at = ${farFutureJob.scheduled_at}`);
@@ -37,8 +40,8 @@ async function main() {
   // Demo-friendly: schedule something 2 seconds out so we can watch it fire.
   const soonId = client.push(
     'send_followup_email',
-    { to: 'demo@example.com' },
-    { delay: '2s' },
+    { to: makeEmail(), campaign: `campaign-${randomInt(1000, 9999)}` },
+    { delay: '2s', priority: randomInt(5, 15) },
   );
   console.log(`Pushed job #${soonId}, scheduled 2 seconds out.`);
 
@@ -47,10 +50,16 @@ async function main() {
 
   const worker = new Worker({ dbPath: DB_PATH, concurrency: 2, pollIntervalMs: 100 });
   worker.register('send_followup_email', async (payload) => {
-    return { sent: true, to: payload.to };
+    return {
+      sent: true,
+      to: payload.to,
+      campaign: payload.campaign,
+      messageId: `followup-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      deliveryBytes: randomInt(300, 2200),
+    };
   });
   worker.on('jobStart', ({ job }) => console.log(`\n-> job #${job.id} started at ${new Date().toISOString()}`));
-  worker.on('jobComplete', ({ job }) => console.log(`-> job #${job.id} completed`));
+  worker.on('jobComplete', ({ job, result }) => console.log(`-> job #${job.id} completed: ${JSON.stringify(result)}`));
 
   await worker.start();
 
