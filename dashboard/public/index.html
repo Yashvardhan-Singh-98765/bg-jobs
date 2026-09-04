@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bg-jobs Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">bg</div>
+          <div>
+            <strong>bg-jobs</strong>
+            <small>Queue Console</small>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active">Overview</button>
+          <button class="nav-item">Queues</button>
+          <button class="nav-item">Workers</button>
+          <button class="nav-item">Jobs</button>
+        </nav>
+
+        <div class="mini-card">
+          <span class="chip success">Live</span>
+          <p>Background workers are accepting jobs and processing them with retry and scheduling logic.</p>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Operations monitor</p>
+            <h1>Job monitor</h1>
+          </div>
+          <div class="header-actions">
+            <button id="refreshBtn" class="secondary-btn">Refresh</button>
+            <button id="runDemoBtn" class="primary-btn">Run demo</button>
+            <button id="runScheduledBtn" class="secondary-btn">Scheduled demo</button>
+            <button id="runTestsBtn" class="secondary-btn">Run tests</button>
+            <button id="resetBtn" class="secondary-btn">Reset history</button>
+          </div>
+        </header>
+
+        <section class="hero-panel panel">
+          <div>
+            <p class="eyebrow accent">System health</p>
+            <h2>Queue load and worker activity</h2>
+          </div>
+          <div class="hero-metrics">
+            <div>
+              <span>Total jobs</span>
+              <strong id="totalJobs">0</strong>
+            </div>
+            <div>
+              <span>Success rate</span>
+              <strong id="successRate">0%</strong>
+            </div>
+            <div>
+              <span>Avg attempts</span>
+              <strong id="avgAttempts">0.0</strong>
+            </div>
+          </div>
+          <p id="systemMessage" class="system-message">Worker status: connecting...</p>
+        </section>
+
+        <section class="stats-grid" id="statsGrid">
+          <article class="stat-card pending">
+            <label>Pending</label>
+            <strong id="pendingCount">0</strong>
+          </article>
+          <article class="stat-card running">
+            <label>Running</label>
+            <strong id="runningCount">0</strong>
+          </article>
+          <article class="stat-card completed">
+            <label>Completed</label>
+            <strong id="completedCount">0</strong>
+          </article>
+          <article class="stat-card failed">
+            <label>Failed</label>
+            <strong id="failedCount">0</strong>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Queue overview</h2>
+            </div>
+            <div id="queueBreakdown" class="queue-list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Enqueue a job</h2>
+            </div>
+            <form id="jobForm" class="job-form">
+              <div class="field-row two-col">
+                <label>
+                  Job type
+                  <input type="text" name="type" value="send_email" required />
+                </label>
+                <label>
+                  Queue
+                  <input type="text" name="queue" value="default" />
+                </label>
+              </div>
+
+              <div class="field-row two-col">
+                <label>
+                  Priority
+                  <input type="number" name="priority" value="0" />
+                </label>
+                <label>
+                  Retry limit
+                  <input type="number" name="retryLimit" value="3" min="0" />
+                </label>
+              </div>
+
+              <label>
+                Delay
+                <input type="text" name="delay" placeholder="e.g. 30s or 2d" />
+              </label>
+
+              <label>
+                Payload JSON
+                <textarea name="payload" rows="5">{"to":"user@example.com"}</textarea>
+              </label>
+
+              <button type="submit" class="primary-btn">Add job</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="lower-grid">
+          <div class="panel activity-panel">
+            <div class="panel-header">
+              <h2>Recent activity</h2>
+            </div>
+            <ul id="activityList" class="activity-list"></ul>
+          </div>
+
+          <div class="panel jobs-panel">
+            <div class="panel-header jobs-header">
+              <h2>Recent jobs</h2>
+              <select id="statusFilter">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="running">Running</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Queue</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Attempts</th>
+                    <th>Scheduled</th>
+                  </tr>
+                </thead>
+                <tbody id="jobsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
